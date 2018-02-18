@@ -2,9 +2,9 @@
 
 1. Update batters with new year of stats.   See [parseleaderboards.pl](./parseleaderboards.pl).
 
-2. Run stats.pl to update the stats: stats.pl derives ISO, WOBA, BB%, and K% from the parsed stats.
+2. Run [stats.pl](./stats.pl) to update the stats: [stats.pl](./stats.pl) derives ISO, WOBA, BB%, and K% from the parsed stats.
 
-3. Run averageleague.pl to provide league averages.
+3. Run [averageleague.pl](averageleague.pl) to provide league averages.
 
 3. Run adjustedstats.pl to provide adjusted stats for league.
 
