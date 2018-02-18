@@ -1,4 +1,5 @@
-# Projections
+[Projections](http://github.com/cunningt/projections)
+======
 
 1. Update batters with new year of stats.   See [parseleaderboards.pl](parseleaderboards.pl).
 
