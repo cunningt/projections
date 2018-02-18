@@ -7,6 +7,9 @@
 *.pm.tdy
 *.bs
 
+dbi.conf
+rankings/html/
+
 # Devel::Cover
 cover_db/
 
