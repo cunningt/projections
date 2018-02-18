@@ -1,6 +1,6 @@
 # Projections
 
-1. Update batters with new year of stats.   See parseleaderboards.pl.
+1. Update batters with new year of stats.   See [parseleaderboards.pl](./parseleaderboards.pl).
 
 2. Run stats.pl to update the stats: stats.pl derives ISO, WOBA, BB%, and K% from the parsed stats.
 
