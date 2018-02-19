@@ -20,10 +20,15 @@ my $statsth = $dbh->prepare($statsquery);
 my $dir = "html";
 mkdir $dir;
 open (FH, ">", "$dir/rankings.html");
-print FH "<table>\n";
+print FH "<html>\n<head>\n";
+print FH "<link rel=\"stylesheet\" href=\"https://unpkg.com/purecss\@1.0.0/build/pure-min.css\" integrity=\"sha384-nn4HPE8lTHyVtfCBi5yW9d20FjT8BJwUXyWZT9InLYax14RDjBj46LmSztkmNP9w\" crossorigin=\"anonymous\">\n\n";
+print FH "</head>\n<body>\n";
+print FH "<table class=\"pure-table pure-table-horizontal\">\n";
+print FH "<thead>\n";
 print FH "<tr>\n";
 print FH "<th>Rank</th><th>Name</th><th>Age</th><th>Level</th><th>ISO</th><th>wOBA</th><th>BB%</th><th>K%</th><th>WAR</th><th>Comp</th>\n";
 print FH "</tr>\n";
+print FH "</thead>\n";
 
 $rankingsth->execute();
 my $rankcounter = 1;
@@ -61,6 +66,7 @@ while (@data = $rankingsth->fetchrow_array()) {
 }
 
 print FH "</table>\n";
+print FH "</body></html>\n";
 close (FH);
 $rankingsth->finish;
 
@@ -85,10 +91,15 @@ while (@data = $rankingsth->fetchrow_array()) {
     print "Comps for $nameurl...\n";
 
     open (CH, ">", "$dir/$uid.html");
-    print CH "<table>\n";
+    print CH "<html>\n<head>\n";
+    print CH "<link rel=\"stylesheet\" href=\"https://unpkg.com/purecss\@1.0.0/build/pure-min.css\" integrity=\"sha384-nn4HPE8lTHyVtfCBi5yW9d20FjT8BJwUXyWZT9InLYax14RDjBj46LmSztkmNP9w\" crossorigin=\"anonymous\">\n";
+    print CH "</head><body>\n";
+    print CH "<table class=\"pure-table pure-table-horizontal\">\n";
+    print CH "<thead>\n";
     print CH "<tr>\n";
     print CH "<th>Name</th><th>Age</th><th>Year</th><th>Level</th><th>ISO</th><th>wOBA</th><th>BB%</th><th>K%</th><th>WAR</th><th>RAR</th>\n";
     print CH "</tr>\n";
+    print CH "</thead>\n";
     print CH "<tr>\n";
     print CH "<td><a href=\"https://www.baseball-reference.com/register/player.fcgi?id=$nameurl#standard_batting::none\">$name</a></td>";
     print CH "<td>$age</td>";
@@ -101,12 +112,14 @@ while (@data = $rankingsth->fetchrow_array()) {
     printf CH "<td>%.2f</td>", $war_off;
     printf CH "<td>%.2f</td>", $rar_off;
     print CH "</tr>\n";
-    print CH "</table><hr>\n";
+    print CH "</table>\n";
 
-    print CH "<table>\n";
+    print CH "<table class=\"pure-table pure-table-horizontal\">\n";
+    print CH "<thead>\n";
     print CH "<tr>\n";
     print CH "<th>Name</th><th>Age</th><th>Year</th><th>Level</th><th>Euclidean</th><th>Mahalanobis</th><th>ISO</th><th>wOBA</th><th>BB%</th><th>K%</th><th>WAR</th><th>RAR</th>\n";
- 
+    print CH "</tr>\n";
+    print CH "</thead>\n"; 
 
     # List the player's comps
     $compsth->execute($uid);
@@ -159,6 +172,7 @@ while (@data = $rankingsth->fetchrow_array()) {
     printf CH "<td><b>%.2f</b></td>", $rartotal;
     print CH "</tr>\n";
     print CH "</table>\n";
+    print CH "</body></table>\n";
     close (CH);
 
 
