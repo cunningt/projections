@@ -3,8 +3,13 @@ import MySQLdb
 import pandas as pd
 import scipy as sp
 import ConfigParser
+import argparse
 from scipy.spatial.distance import mahalanobis
 from scipy.spatial.distance import euclidean
+
+parser = argparse.ArgumentParser()
+parser.add_argument("year", help="the year to generate comps for", type=int)
+args = parser.parse_args()
 
 config = ConfigParser.ConfigParser()
 config.sections()
@@ -17,7 +22,7 @@ db = MySQLdb.connect(host=config.get('history', 'host'),    # your host, usually
 
 
 cur = db.cursor()
-cur.execute("select b.uid, b.year, b.nameurl, b.year, b.age, b.level from batters b where year = 2017")
+cur.execute("select b.uid, b.year, b.nameurl, b.year, b.age, b.level from batters b where year = %d" % args.year)
 
 for row in cur.fetchall():
     uid = row[0]
@@ -39,7 +44,8 @@ for row in cur.fetchall():
     compsql = "select b.uid, b.nameurl, b.year, b.age, s.bbrate, s.woba, s.krate " \
                 "from batters b, adjustedstats s where b.uid=s.uid " \
                 "and b.age > %f and b.age < %f and b.level='%s' " \
-                "order by b.year desc" % (minage, maxage, level)
+		"and b.year <= %d "\
+                "order by b.year desc" % (minage, maxage, level, args.year-10)
     print compsql
     df = pd.read_sql(compsql, con=db)
 
