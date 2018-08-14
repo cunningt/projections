@@ -17,7 +17,9 @@ create table batters (
         hr smallint not null,
         rbi smallint not null,
         bb smallint not null,
-	so smallint not null
+	so smallint not null,
+        ibb smallint not null,
+        sf smallint not null
 );
 
 alter table batters add index (uid);

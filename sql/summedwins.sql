@@ -1,5 +1,5 @@
 create table summedwins(
-  nameurl varchar(64) not null,
+  nameurl varchar(64) not null unique,
   runs_replacement float,
   runs_above_rep float,
   runs_above_avg float,

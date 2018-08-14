@@ -1,4 +1,4 @@
-create table comps (
+create table pitchercomps (
    uid int not null,
    year float not null,
    compuid int not null,
