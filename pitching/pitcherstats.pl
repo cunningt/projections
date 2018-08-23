@@ -8,7 +8,6 @@ my $curdir = `pwd`;
 chomp $curdir;
 my $dbh = DBI->connect("DBI:mysql:mysql_read_default_file=$curdir/dbi.conf;mysql_read_default_group=history", undef, undef, {});
 
-#my $agesquery = "select age, stddev, league from pitcherages"; 
 my $playerquery = "select uid, nameurl, year, league, age, g, gs, bf, ip, h, r, er, bb, so, hbp, hr from pitchers";
 my $statsquery = "insert into pitcherstats(uid, nameurl, year, level, bbpercent, hrpercent, kpercent, ksquared, gspercent, fip) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 

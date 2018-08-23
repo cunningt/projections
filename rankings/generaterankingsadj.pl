@@ -5,12 +5,14 @@ use DBD::mysql;
 use Math::Complex;
 
 my $curdir = `pwd`;
+my $pamin = 50;
+
 chomp $curdir;
 my $dbh = DBI->connect("DBI:mysql:mysql_read_default_file=$curdir/dbi.conf;mysql_read_default_group=history", undef, undef, {});
 
 my $year = defined($ARGV[0]) ? shift(@ARGV) : "2017";
 
-my $rankingsquery = "select b.uid, b.nameurl, b.name, b.level, b.league, b.team, b.age, c.war_off, c.runs_above_avg_off from batters b, weightedcompwins c where b.year = ? and b.uid = c.uid order by c.runs_above_avg_off desc";
+my $rankingsquery = "select b.uid, b.nameurl, b.name, b.level, b.league, b.team, b.age, c.war_off, c.runs_above_avg_off from batters b, weightedcompwins c where b.year = ? and b.uid = c.uid and b.pa > ? order by c.runs_above_avg_off desc";
 
 my $compquery = "select c.compuid, c.euclidean, c.mahalanobis, b.name, b.nameurl, b.age, b.year, b.level, n.brid, ifnull(w.runs_replacement,0), ifnull(w.runs_above_rep,0), ifnull(w.runs_above_avg,0), ifnull(w.runs_above_avg_off,0), ifnull(w.war,0), ifnull(w.war_def,0), ifnull(w.war_off,0), ifnull(w.war_rep,0) from adjustedcomps c, batters b, nameurl n left join summedwins w on n.brid = w.nameurl where c.compuid = b.uid and b.year <= ? and b.nameurl = n.brminorid and c.uid = ? order by mahalanobis asc limit 15";
 
@@ -33,7 +35,7 @@ print FH "<th>Rank</th><th>Name</th><th>Age</th><th>Level</th><th>ISO</th><th>wO
 print FH "</tr>\n";
 print FH "</thead>\n";
 
-$rankingsth->execute($year);
+$rankingsth->execute($year, $pamin);
 my $rankcounter = 1;
 while (@data = $rankingsth->fetchrow_array()) {
     my $counter = 0;
@@ -64,7 +66,7 @@ while (@data = $rankingsth->fetchrow_array()) {
     printf FH "<td>%.1f</td>", ($rdata[3] * 100);
     print FH "<td>$rar_off</td>\n";
     printf FH "<td>" . $cdata[3] . ", " . $cdata[6];
-    if ($cdata[2] > 1 ) {
+    if ($cdata[2] > 2 ) {
         printf FH "<b>***</b>\n";
     }
     printf FH "</td>\n";

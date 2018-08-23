@@ -22,7 +22,7 @@ db = MySQLdb.connect(host=config.get('history', 'host'),    # your host, usually
 
 
 cur = db.cursor()
-cur.execute("select b.uid, b.year, b.nameurl, b.year, b.age, b.level, ast.isop from batters b, adjustedstats ast where b.uid = ast.uid and year = %d" % args.year)
+cur.execute("select b.uid, b.year, b.nameurl, b.year, b.age, b.level, ast.isop from batters b, adjustedstats ast where b.age<=28 and b.uid = ast.uid and year = %d" % args.year)
 
 for row in cur.fetchall():
     uid = row[0]
@@ -40,7 +40,6 @@ for row in cur.fetchall():
                 "from batters b, adjustedstats s where b.uid=s.uid " \
                 "and b.uid=%d" % (uid)
     print playersql
-    print ("ISOP %f" % (isop))
     playerdf = pd.read_sql(playersql, con=db) 
 
     # We should be using the standard deviation of ISOP here to determine the range we're looking for
@@ -49,25 +48,33 @@ for row in cur.fetchall():
                 "from batters b, adjustedstats s where b.uid=s.uid " \
                 "and b.age > %f and b.age < %f and b.level='%s' " \
 		"and b.year <= %d "\
-                "and s.isop <= %f "\
-                "and s.isop >= %f "\
-                "order by b.year desc" % (minage, maxage, level, args.year-10, (isop + .052), (isop - .052))
+                "order by b.year desc" % (minage, maxage, level, args.year-10)
     print compsql
     df = pd.read_sql(compsql, con=db)
 
-    covmx = df.iloc[:-1,4:9].cov()
-    invcovmx = sp.linalg.inv(covmx)
+    print "df.shape %d" % df.shape[0]
+    if not df.empty and (df.shape[0] >= 15):
+      #print(df.to_string())
+      covmx = df.iloc[:-1,4:9].cov()
 
-    for index, row in df.iterrows():
-      comp = playerdf.iloc[0,4:9].values
-      array = df.iloc[index,4:9].values
-      m =  mahalanobis(comp, array, invcovmx)
-      e = euclidean(comp,array)
+      #if covmx.empty:
+        #print "COVMX EMPTY\n"
+      covmx = covmx.fillna(0)
+
+      print(covmx.to_string())
+      #print "COVMX\n"
+      invcovmx = sp.linalg.inv(covmx)
+
+      for index, row in df.iterrows():
+        comp = playerdf.iloc[0,4:9].values
+        array = df.iloc[index,4:9].values
+        m =  mahalanobis(comp, array, invcovmx)
+        e = euclidean(comp,array)
       
-      insertsql = "insert into adjustedcomps(uid, year, compuid, mahalanobis, euclidean) " \
-                  " VALUES (%d, %d, %d, %f, %f)" % (uid, year, df.iloc[index,0], m, e)   
+        insertsql = "insert into adjustedcomps(uid, year, compuid, mahalanobis, euclidean) " \
+                " VALUES (%d, %d, %d, %f, %f)" % (uid, year, df.iloc[index,0], m, e)   
       
-      cur.execute(insertsql)   
-      db.commit()
- 
+        cur.execute(insertsql)   
+        db.commit()
+
 db.close()

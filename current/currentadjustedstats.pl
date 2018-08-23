@@ -8,7 +8,9 @@ my $curdir = `pwd`;
 chomp $curdir;
 my $dbh = DBI->connect("DBI:mysql:mysql_read_default_file=$curdir/dbi.conf;mysql_read_default_group=history", undef, undef, {});
 
-my $statsquery = "select s.uid, s.isop, s.bbrate, s.woba, s.krate, b.league, b.year from stats s, batters b where s.uid=b.uid and b.year=2018";
+my $year = defined($ARGV[0]) ? shift(@ARGV) : "2018";
+
+my $statsquery = "select s.uid, s.isop, s.bbrate, s.woba, s.krate, b.league, b.year from stats s, batters b where s.uid=b.uid and b.year=?";
 my $leaguequery = "select isop, woba, krate from leaguestats where league = ? and year = ?";
 my $avgquery = "select avg(isop), avg(woba), avg(krate) from leaguestats";
 my $adjstatsquery = "insert into adjustedstats(uid, isop, bbrate, woba, krate) VALUES (?, ?, ?, ?, ?)";
@@ -27,9 +29,7 @@ while (@data = $avgsth->fetchrow_array()) {
     $avgkrate = $data[2];
 }
 
-$statssth->execute();
-
-my $statsth = $dbh->prepare($statsquery);
+$statssth->execute($year);
 while (@data = $statssth->fetchrow_array()) {
     my $uid = $data[0];
     my $isop = $data[1];
@@ -51,8 +51,8 @@ while (@data = $statssth->fetchrow_array()) {
     my $isopmult = 1 / ($lgavgisop / $avgisop);
  
     $adjstatsth->execute($uid,
-                ($isop * $isopmult),
-		$bbrate, 
-                ($woba * $wobamult),
-                $krate);
+        ($isop * $isopmult),
+        $bbrate, 
+        ($woba * $wobamult),
+        $krate);
 }

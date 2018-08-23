@@ -6,6 +6,10 @@ import ConfigParser
 from scipy.spatial.distance import mahalanobis
 from scipy.spatial.distance import euclidean
 
+parser = argparse.ArgumentParser()
+parser.add_argument("year", help="the year to generate comps for", type=int)
+args = parser.parse_args()
+
 config = ConfigParser.ConfigParser()
 config.sections()
 config.read("dbi.conf")
@@ -16,7 +20,7 @@ db = MySQLdb.connect(host=config.get('history', 'host'),    # your host, usually
                      db=config.get('history', 'database'))        # name of the data base
 
 cur = db.cursor()
-cur.execute("select b.uid, b.year, b.nameurl, b.year, b.age, b.level from batters b where year = 2017")
+cur.execute("select b.uid, b.year, b.nameurl, b.year, b.age, b.level from batters b where year = %d" % args.year)
 
 for row in cur.fetchall():
     uid = row[0]

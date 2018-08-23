@@ -10,7 +10,7 @@ my $dbh = DBI->connect("DBI:mysql:mysql_read_default_file=$curdir/dbi.conf;mysql
 
 my $year = defined($ARGV[0]) ? shift(@ARGV) : "2017";
 
-my $statsquery = "select s.uid, p.league, p.year, s.bbpercent, s.hrpercent, s.kpercent, s.ksquared from pitcherstats s, pitchers p where s.uid=p.uid and p.year=?";
+my $statsquery = "select s.uid, p.league, p.year, s.bbpercent, s.hrpercent, s.kpercent, s.ksquared from pitcherstats s, pitchers p where s.uid=p.uid";
 my $leaguequery = "select bbpercent, hrpercent, kpercent, ksquared from pitchingleaguestats where league = ? and year = ?";
 my $avgquery = "select avg(bbpercent), avg(hrpercent), avg(kpercent), avg(ksquared) from pitchingleaguestats";
 my $adjstatsquery = "insert into pitcheradjustedstats(uid, bbpercent, hrpercent, kpercent, ksquared) VALUES (?, ?, ?, ?, ?)";
@@ -30,7 +30,7 @@ while (@data = $avgsth->fetchrow_array()) {
     $avgksquared = $data[$count++];
 }
 
-$statssth->execute($year);
+$statssth->execute();
 
 while (@data = $statssth->fetchrow_array()) {
     my $count = 0;

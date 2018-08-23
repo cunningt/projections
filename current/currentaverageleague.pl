@@ -8,7 +8,9 @@ my $curdir = `pwd`;
 chomp $curdir;
 my $dbh = DBI->connect("DBI:mysql:mysql_read_default_file=$curdir/dbi.conf;mysql_read_default_group=history", undef, undef, {});
 
-my $leaguequery = "select distinct league, year from batters where year = 2018";
+my $year = defined($ARGV[0]) ? shift(@ARGV) : "2018";
+
+my $leaguequery = "select distinct league, year from batters where year = ?";
 my $playerquery = "select ab, pa, h, bb, doubles, triples, hr, league, so from batters where league=? and year=? and age < 28";
 my $isopquery = "select sum(ab) as ab, sum(doubles) as doubles, sum(triples) as triples, sum(hr) as hr, sum(pa) as pa, sum(so) as so from batters where league=? and year=? and age < 28 group by league";
 my $wobaquery = "select sum(pa) as pa, sum(h) as h, sum(bb) as bb, sum(doubles) as doubles, sum(triples) as triples, sum(hr) as hr from batters where league=? and year=? and age < 28 group by league";
@@ -21,7 +23,7 @@ my $isopsth = $dbh->prepare($isopquery);
 my $wobasth = $dbh->prepare($wobaquery);
 my $playersth = $dbh->prepare($playerquery);
 my $agesth = $dbh->prepare($agequery);
-$leaguesth->execute();
+$leaguesth->execute($year);
 
 while (@data = $leaguesth->fetchrow_array()) {
     my $lg = $data[0];
@@ -85,6 +87,7 @@ while (@data = $leaguesth->fetchrow_array()) {
        my $k = $data[$st++];
        my $singles = $h - $doubles - $triples - $hr;
 
+       next if ($ab == 0);
        my $isop = ($doubles + ($triples * 2) + ($hr * 3)) / $ab;
        my $woba = ((0.72 * $bb) + (0.9 * $singles) + (1.24 * $doubles)
                 + (1.56 * $triples) + (1.95 * $hr)) / $pa;

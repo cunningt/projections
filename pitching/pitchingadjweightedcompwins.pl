@@ -25,27 +25,27 @@ $playersth->execute($year);
 while (@data = $playersth->fetchrow_array()) {
     my $compuid = $data[0];
     print "UID [$compuid]\n";
-    my ($euc, $runs_above_avg, $runs_above_avg_adj, $runs_above_rep, $war) = (0) x 5;
+    my ($mah, $runs_above_avg, $runs_above_avg_adj, $runs_above_rep, $war) = (0) x 5;
 
     $compsth->execute($year, $compuid, $compuid);
     $counter = 0;
     while (@wdata = $compsth->fetchrow_array()) {
-	my $euclidean = $wdata[1];
-        next if ($euclidean == 0);
+	my $mahalanobis = $wdata[1];
+        next if ($mahalanobis == 0);
 
-        my $inveuc = 1 / $euclidean;  
+        my $inveuc = 1 / $mahalanobis;  
 
         $runs_above_avg += $wdata[4] * $inveuc;
     	$runs_above_avg_adj += $wdata[5] * $inveuc;
         $runs_above_rep += $wdata[6] * $inveuc;
         $war += $wdata[7] * $inveuc;
 
-	    $euc += $inveuc;
+        $mah += $inveuc;
         $counter++;
     }
 
-    if ($euc != 0) {
-        $insertsth->execute($compuid, ($runs_above_avg/$euc), ($runs_above_avg_adj/$euc), ($runs_above_rep/$euc), ($war/$euc)); 
+    if ($mah != 0) {
+        $insertsth->execute($compuid, ($runs_above_avg/$mah), ($runs_above_avg_adj/$mah), ($runs_above_rep/$mah), ($war/$mah)); 
     }
 }
 

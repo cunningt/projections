@@ -21,7 +21,7 @@ db = MySQLdb.connect(host=config.get('history', 'host'),    # your host, usually
                      db=config.get('history', 'database'))        # name of the data base
 
 cur = db.cursor()
-cur.execute("select p.uid, p.year, p.nameurl, p.year, p.age, p.league from pitchers p where year = %d" % args.year)
+cur.execute("select p.uid, p.year, p.nameurl, p.year, p.age, p.league from pitchers p where ip > 20 and year = %d" % args.year)
 
 for row in cur.fetchall():
     uid = row[0]
@@ -31,8 +31,8 @@ for row in cur.fetchall():
     age = row[4]
     level = row[5]
 
-    minage = age - 3.0
-    maxage = age + 3.0    
+    minage = age - 1.5
+    maxage = age + 1.5    
 
     playersql = "select p.uid, p.nameurl, p.year, p.age, ps.bbpercent, ps.hrpercent, ps.kpercent, ps.ksquared, ps.gspercent " \
                 "from pitchers p, pitcherstats ps where p.uid=ps.uid " \

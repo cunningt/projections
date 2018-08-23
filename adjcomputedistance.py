@@ -20,9 +20,10 @@ db = MySQLdb.connect(host=config.get('history', 'host'),    # your host, usually
                      passwd=config.get('history', 'password'),  # your password
                      db=config.get('history', 'database'))        # name of the data base
 
+pamin = 70
 
 cur = db.cursor()
-cur.execute("select b.uid, b.year, b.nameurl, b.year, b.age, b.level from batters b where year = %d" % args.year)
+cur.execute("select b.uid, b.year, b.nameurl, b.year, b.age, b.level from batters b where pa > %d and year = %d" % (pamin, args.year))
 
 for row in cur.fetchall():
     uid = row[0]
@@ -35,13 +36,13 @@ for row in cur.fetchall():
     minage = age - 0.5
     maxage = age + 0.5    
 
-    playersql = "select b.uid, b.nameurl, b.year, b.age, s.bbrate, s.woba, s.krate " \
+    playersql = "select b.uid, b.nameurl, b.year, b.age, s.isop, s.bbrate, s.woba, s.krate, (s.isop * s.isop) as isopsq " \
                 "from batters b, adjustedstats s where b.uid=s.uid " \
                 "and b.uid=%d" % (uid)
     print playersql
     playerdf = pd.read_sql(playersql, con=db) 
 
-    compsql = "select b.uid, b.nameurl, b.year, b.age, s.bbrate, s.woba, s.krate " \
+    compsql = "select b.uid, b.nameurl, b.year, b.age, s.isop, s.bbrate, s.woba, s.krate, (s.isop * s.isop) as isopsq " \
                 "from batters b, adjustedstats s where b.uid=s.uid " \
                 "and b.age > %f and b.age < %f and b.level='%s' " \
 		"and b.year <= %d "\
@@ -49,15 +50,15 @@ for row in cur.fetchall():
     print compsql
     df = pd.read_sql(compsql, con=db)
 
-    covmx = df.iloc[:-1,4:9].cov()
+    covmx = df.iloc[:-1,4:8].cov()
     invcovmx = sp.linalg.inv(covmx)
 
     for index, row in df.iterrows():
-      comp = playerdf.iloc[0,4:9].values
-      array = df.iloc[index,4:9].values
+      comp = playerdf.iloc[0,4:8].values
+      array = df.iloc[index,4:8].values
       m =  mahalanobis(comp, array, invcovmx)
       e = euclidean(comp,array)
-      
+    
       insertsql = "insert into adjustedcomps(uid, year, compuid, mahalanobis, euclidean) " \
                   " VALUES (%d, %d, %d, %f, %f)" % (uid, year, df.iloc[index,0], m, e)   
       

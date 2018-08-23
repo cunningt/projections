@@ -5,7 +5,7 @@ A minor league comp system.
 
 What is this?
 ------
-This is a bunch of script I'm using to produce minor league comps and scoring.    I'm not sure they'll be at all useful to anyone else, but I'm putting them up because I need to back them up somewhere.
+This is a bunch of scripts I'm using to produce minor league comps and scoring.    I'm not sure they'll be at all useful to anyone else, but I'm putting them up because I need to back them up somewhere.
 
 How do I use this thing?
 ------

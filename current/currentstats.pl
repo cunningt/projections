@@ -8,7 +8,9 @@ my $curdir = `pwd`;
 chomp $curdir;
 my $dbh = DBI->connect("DBI:mysql:mysql_read_default_file=$curdir/dbi.conf;mysql_read_default_group=history", undef, undef, {});
 
-my $playerquery = "select uid, age, pa, ab, h, doubles, triples, hr, bb, league, level, so from batters where year=2018";
+my $year = defined($ARGV[0]) ? shift(@ARGV) : "2018";
+
+my $playerquery = "select uid, age, pa, ab, h, doubles, triples, hr, bb, league, level, so from batters where year=?";
 my $statsquery = "insert into stats(uid, isop, bbrate, woba, krate) VALUES (?, ?, ?, ?, ?)";
 
 my $leaguesth = $dbh->prepare($leaguequery);
@@ -20,7 +22,7 @@ my $statsth = $dbh->prepare($statsquery);
 
 $i = 0;
 
-$playersth->execute;
+$playersth->execute($year);
 while (@data = $playersth->fetchrow_array()) {
     #uid, age, pa, ab, h, doubles, triples, hr, bb, league
     my $uid = $data[0];

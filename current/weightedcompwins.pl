@@ -12,40 +12,65 @@ my $year = defined($ARGV[0]) ? shift(@ARGV) : "2017";
 
 my $playerquery = "select distinct uid from adjustedcomps where year=?";
 
-my $compquery = "select c.compuid, c.euclidean, b.nameurl, n.brid, ifnull(w.runs_replacement,0), ifnull(w.runs_above_rep,0), ifnull(w.runs_above_avg,0), ifnull(w.runs_above_avg_off,0), ifnull(w.war,0), ifnull(w.war_def,0), ifnull(w.war_off,0), ifnull(w.war_rep,0) from adjustedcomps c, batters b, nameurl n left join summedwins w on n.brid = w.nameurl where c.compuid = b.uid and c.year = ? and b.year <= 2008 and b.nameurl = n.brminorid and c.uid = ? and c.compuid != ? order by euclidean asc limit 15";
+my $compquery = "select compuid, mahalanobis from adjustedcomps where uid=? order by mahalanobis asc limit 15";
+
+my $winsquery = "select b.nameurl, n.brid, w.runs_replacement, w.runs_above_rep, w.runs_above_avg, w.runs_above_avg_off, w.war, w.war_def, w.war_off, w.war_rep from batters b, nameurl n, summedwins w where n.brid = w.nameurl and b.uid=? and b.year <= 2008 and b.nameurl = n.brminorid";
 
 my $insertquery = "insert into weightedcompwins(uid, runs_replacement, runs_above_rep, runs_above_avg, runs_above_avg_off, war, war_def, war_off, war_rep) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
 my $playersth = $dbh->prepare($playerquery);
 my $compsth = $dbh->prepare($compquery);
+my $winsth = $dbh->prepare($winsquery);
 my $insertsth = $dbh->prepare($insertquery);
 
 
 $playersth->execute($year);
 while (@data = $playersth->fetchrow_array()) {
-    my $compuid = $data[0];
-    print "UID [$compuid]\n";
-    my ($euc, $runs_replacement, $runs_above_rep, $runs_above_avg, $runs_above_avg_off, $war, $war_def, $war_off, $war_rep) = (0) x 9;
+    my $uid = $data[0];
+    my ($mahc, $runs_replacement, $runs_above_rep, $runs_above_avg, $runs_above_avg_off, $war, $war_def, $war_off, $war_rep) = (0) x 9;
 
-    $compsth->execute($year, $compuid, $compuid);
-    $counter = 0;
-    while (@wdata = $compsth->fetchrow_array()) {
-	my $euclidean = $wdata[1];
-        my $inveuc = 1 / $euclidean;  
+    my $compcounter = 0;
+    my $mlbcounter = 0;
 
-        $runs_replacement += $wdata[4] * $inveuc;
-	$runs_above_rep += $wdata[5] * $inveuc;
-        $runs_above_avg += $wdata[6] * $inveuc;
-        $runs_above_avg_off += $wdata[7] * $inveuc;
-        $war += $wdata[8] * $inveuc;
-        $war_def += $wdata[9] * $inveuc;
-        $war_off += $wdata[10] * $inveuc;
-        $war_rep += $wdata[11] * $inveuc;
+    $compsth->execute($uid);
+    
+    while (@cdata = $compsth->fetchrow_array()) {
+      my $counter = 0;
+      my $compuid = $cdata[$counter++];
+      my $mah = $cdata[$counter++];
+  
+      $winsth->execute($compuid); 
+      my @wdata = $winsth->fetchrow_array(); 
+      #print "UID $uid COMP# $compcounter COMPUID $compuid MAH $mah @wdata\n";
 
-	$euc += $inveuc;
-        $counter++;
+      if (@wdata) {
+        next if ($mah == 0);
+        my $invmah = 1 / $mah;
+
+        $runs_replacement += $wdata[2] * $invmah;
+        $runs_above_rep += $wdata[3] * $invmah;
+        $runs_above_avg += $wdata[4] * $invmah;
+        $runs_above_avg_off += $wdata[5] * $invmah;
+        $war += $wdata[6] * $invmah;
+        $war_def += $wdata[7] * $invmah;
+        $war_off += $wdata[8] * $invmah;
+        $war_rep += $wdata[9] * $invmah;
+
+        $mahc += $invmah;
+
+        $mlbcounter++
+      }
+
+      $compcounter++; 
     }
 
-    $insertsth->execute($compuid, ($runs_replacement/$euc), ($runs_above_rep/$euc), ($runs_above_avg/$euc), ($runs_above_avg_off/$euc), ($war/$euc), ($war_def/$euc), ($war_off/$euc), ($war_rep/$euc)); 
+    #print "$compcounter players $mlbcounter MLB $mahc MAH\n";
+    if (($mahc != 0) && ($compcounter != 0)) {
+      my $factor = ($mlbcounter / $compcounter) * ($mlbcounter / $compcounter) / $mahc;
+      print "FACTOR $factor MAHC $mahc\n";
+      $insertsth->execute($uid, ($runs_replacement * $factor), ($runs_above_rep * $factor), 
+        ($runs_above_avg * $factor), ($runs_above_avg_off * $factor), ($war * $factor), 
+        ($war_def * $factor), ($war_off * $factor), ($war_rep * $factor)); 
+    } 
 }
 

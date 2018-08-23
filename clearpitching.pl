@@ -25,6 +25,6 @@ system("./pitching/pitcherstats.pl");
 system("./pitching/pitchingaverageleague.pl 2018");
 system("./pitching/pitchingadjustedstats.pl 2018");
 system("./pitching/pitchingadjcomputedistance.py 2018");
-system("./pitching/pitchingweightedcompwins.pl 2018");
+system("./pitching/pitchingadjweightedcompwins.pl 2018");
 
 exit 0;

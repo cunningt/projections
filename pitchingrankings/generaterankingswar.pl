@@ -12,7 +12,7 @@ my $year = defined($ARGV[0]) ? shift(@ARGV) : "2017";
 
 my $rankingsquery = "select b.uid, b.nameurl, b.name, b.league, b.team, b.age, c.war, c.runs_above_avg "
                   . "from pitchers b, pitchingweightedcompwins c where b.year = ? and b.uid = c.uid "
-                  . "order by c.war desc limit 1000";
+                  . "order by c.war desc";
 
 my $compquery = "select c.compuid, c.mahalanobis, b.name, b.nameurl, b.age, b.year, n.brid, ifnull(w.runs_above_avg,0), "
               . "ifnull(w.runs_above_avg_adj,0), ifnull(w.runs_above_rep,0), ifnull(w.war,0) "
@@ -61,7 +61,7 @@ while (@data = $rankingsth->fetchrow_array()) {
 
     print FH "<tr>\n";
     print FH "<td>" . $rankcounter++ . "</td>";
-    print FH "<td><b>$name</b>, <a href=\"https://www.baseball-reference.com/register/player.fcgi?id=$nameurl#standard_batting::none\">BR</a>, <a href=\"$uid.html\">comps</a></td>";
+    print FH "<td><b>$name</b>, <a href=\"https://www.baseball-reference.com/register/player.fcgi?id=$nameurl#standard_pitching::none\">BR</a>, <a href=\"$uid.html\">comps</a></td>";
     print FH "<td>$age</td>";
     print FH "<td>$level</td>";
     printf FH "<td>%.2f</td>", ($rdata[0]);
@@ -110,7 +110,7 @@ while (@data = $rankingsth->fetchrow_array()) {
     print CH "</tr>\n";
     print CH "</thead>\n";
     print CH "<tr>\n";
-    print CH "<td><a href=\"https://www.baseball-reference.com/register/player.fcgi?id=$nameurl#standard_batting::none\"><b>$name</b></a></td>";
+    print CH "<td><a href=\"https://www.baseball-reference.com/register/player.fcgi?id=$nameurl#standard_pitching::none\"><b>$name</b></a></td>";
     print CH "<td>$age</td>";
     print CH "<td>$year</td>";
     print CH "<td>$level</td>";
@@ -154,7 +154,7 @@ while (@data = $rankingsth->fetchrow_array()) {
        $statsth->execute($compuid);
        my @crdata = $statsth->fetchrow_array();
        print CH "<tr>\n";
-       print CH "<td><a href=\"https://www.baseball-reference.com/register/player.fcgi?id=$cnameurl#standard_batting::none\"><b>$cname</b></a></td>";
+       print CH "<td><a href=\"https://www.baseball-reference.com/register/player.fcgi?id=$cnameurl#standard_pitching::none\"><b>$cname</b></a></td>";
        print CH "<td>$cage</td>";
        print CH "<td>$cyear</td>";
        print CH "<td>$level</td>";
