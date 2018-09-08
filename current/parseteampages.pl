@@ -146,9 +146,6 @@ sub insertBatters {
 
             print "PLAYER " . Dumper(\$player) . "\n";
 
-my $query = "insert into batters(nameurl, name, year, age, team, league, level, games, pa, ab, r, h, doubles, triples, hr, rbi, bb, so) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
-
 	    $isth->execute($nameurl,
                         $tree->cell($rowcount,1)->as_text,
                         $year,

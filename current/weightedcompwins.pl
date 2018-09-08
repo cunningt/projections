@@ -47,6 +47,11 @@ while (@data = $playersth->fetchrow_array()) {
         next if ($mah == 0);
         my $invmah = 1 / $mah;
 
+        # We should not weight any comp more than once.
+        if ($invmah > 1) {
+          $invmah = 1;
+        }
+
         $runs_replacement += $wdata[2] * $invmah;
         $runs_above_rep += $wdata[3] * $invmah;
         $runs_above_avg += $wdata[4] * $invmah;
