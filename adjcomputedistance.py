@@ -33,8 +33,8 @@ for row in cur.fetchall():
     age = row[4]
     level = row[5]
 
-    minage = age - 0.5
-    maxage = age + 0.5    
+    minage = age - 0.75
+    maxage = age + 0.75
 
     playersql = "select b.uid, b.nameurl, b.year, b.age, s.isop, s.bbrate, s.woba, s.krate, (s.isop * s.isop) as isopsq " \
                 "from batters b, adjustedstats s where b.uid=s.uid " \
@@ -54,8 +54,8 @@ for row in cur.fetchall():
     invcovmx = sp.linalg.inv(covmx)
 
     for index, row in df.iterrows():
-      comp = playerdf.iloc[0,4:8].values
-      array = df.iloc[index,4:8].values
+      comp = playerdf.iloc[0,3:8].values
+      array = df.iloc[index,3:8].values
       m =  mahalanobis(comp, array, invcovmx)
       e = euclidean(comp,array)
     

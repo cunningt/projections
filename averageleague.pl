@@ -85,6 +85,8 @@ while (@data = $leaguesth->fetchrow_array()) {
        my $k = $data[$st++];
        my $singles = $h - $doubles - $triples - $hr;
 
+
+       next if ($ab == 0);
        my $isop = ($doubles + ($triples * 2) + ($hr * 3)) / $ab;
        my $woba = ((0.72 * $bb) + (0.9 * $singles) + (1.24 * $doubles)
                 + (1.56 * $triples) + (1.95 * $hr)) / $pa;

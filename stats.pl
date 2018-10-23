@@ -8,8 +8,8 @@ my $curdir = `pwd`;
 chomp $curdir;
 my $dbh = DBI->connect("DBI:mysql:mysql_read_default_file=$curdir/dbi.conf;mysql_read_default_group=history", undef, undef, {});
 
-my $playerquery = "select uid, age, pa, ab, h, doubles, triples, hr, bb, league, level, so from batters";
-my $statsquery = "insert into stats(uid, isop, bbrate, woba, krate) VALUES (?, ?, ?, ?, ?)";
+my $playerquery = "select uid, age, pa, ab, h, doubles, triples, hr, bb, league, level, so, sf from batters";
+my $statsquery = "insert into stats(uid, isop, bbrate, woba, krate, babip) VALUES (?, ?, ?, ?, ?, ?)";
 
 my $leaguesth = $dbh->prepare($leaguequery);
 my $playersth = $dbh->prepare($query);
@@ -35,8 +35,9 @@ while (@data = $playersth->fetchrow_array()) {
     my $league = $data[9];
     my $level = $data[10];
     my $so = $data[11];
+    my $sf = $data[12];
  
-    if ($ab > 0) {
+    if (($ab > 0) && (($ab - $so - $hr + sf) > 0) ) {
         my $isop = ($doubles + ($triples * 2) + ($hr * 3)) / $ab;
         my $singles = $h - $doubles - $triples - $hr;
         my $woba = ((0.72 * $bb) + (0.9 * $singles) + (1.24 * $doubles)
@@ -44,12 +45,20 @@ while (@data = $playersth->fetchrow_array()) {
         my $bbrate = $bb / $pa;
         
         my $krate = $so / $pa;
-                
+
+        my $hhr = $h - $hr;
+	print "UID [$uid] AB[$ab] SO [$so] HR[$hr] SF[$sf]\n";
+        my $bip = $ab + $sf - $so - $hr;
+        my $babip = ($hhr) / ($bip);
+
+        print "UID [$uid] HHR [$hhr] BIP [$bip] BABIP [$babip]\n";
+
         $statsth->execute($uid,
                 $isop, 
 		$bbrate, 
                 $woba,
-                $krate);
+                $krate,
+                $babip);
 
     $i++;
     if ($i % 100) {

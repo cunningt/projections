@@ -22,7 +22,7 @@ db = MySQLdb.connect(host=config.get('history', 'host'),    # your host, usually
 
 
 cur = db.cursor()
-cur.execute("select b.uid, b.year, b.nameurl, b.year, b.age, b.level, ast.isop from batters b, adjustedstats ast where b.age<=28 and b.uid = ast.uid and year = %d" % args.year)
+cur.execute("select b.uid, b.year, b.nameurl, b.year, b.age, b.level, ast.isop, s.babip from batters b, stats s, adjustedstats ast where b.age<=28 and b.uid = s.uid and b.uid = ast.uid and year = %d" % args.year)
 
 for row in cur.fetchall():
     uid = row[0]
@@ -32,20 +32,22 @@ for row in cur.fetchall():
     age = row[4]
     level = row[5]
     isop = row[6]
+    babip = row[7]
 
-    minage = age - 0.5
-    maxage = age + 0.5    
+    minage = age - 0.75
+    maxage = age + 0.75
 
-    playersql = "select b.uid, b.nameurl, b.year, b.age, s.isop, s.bbrate, s.woba, s.krate " \
-                "from batters b, adjustedstats s where b.uid=s.uid " \
+    playersql = "select b.uid, b.nameurl, b.year, b.age, s.isop, s.bbrate, st.babip, s.krate " \
+                "from batters b, stats st, adjustedstats s where b.uid=s.uid and b.uid=st.uid " \
                 "and b.uid=%d" % (uid)
     print playersql
     playerdf = pd.read_sql(playersql, con=db) 
 
     # We should be using the standard deviation of ISOP here to determine the range we're looking for
     # but I'm doing something dirty and quick - the average ISOP standard deviation is .052
-    compsql = "select b.uid, b.nameurl, b.year, b.age, s.isop, s.bbrate, s.woba, s.krate " \
-                "from batters b, adjustedstats s where b.uid=s.uid " \
+    compsql = "select b.uid, b.nameurl, b.year, b.age, s.isop, s.bbrate, st.babip, s.krate " \
+                "from batters b, stats st, adjustedstats s " \
+                "where b.uid=s.uid and b.uid = st.uid " \
                 "and b.age > %f and b.age < %f and b.level='%s' " \
 		"and b.year <= %d "\
                 "order by b.year desc" % (minage, maxage, level, args.year-10)
